@@ -1,0 +1,16 @@
+# IntelliJ IDEA
+.idea/
+*.iml
+
+# Spring Boot
+target/
+*.jar
+*.war
+
+# OnlyOffice / Archivos temporales
+App_Data/
+*.log
+
+# Angular (si estuviera en la misma carpeta)
+node_modules/
+dist/

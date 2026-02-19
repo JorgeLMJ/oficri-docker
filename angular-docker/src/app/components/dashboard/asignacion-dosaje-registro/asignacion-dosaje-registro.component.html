@@ -1,0 +1,221 @@
+  <div class="container-fluid p-0 d-flex flex-column" style="margin: -1.5rem; width: calc(100% + 3rem); height: calc(100vh - 80px); overflow: hidden;">
+    <div class="row g-0 flex-grow-1 h-100">
+      
+<aside class="col-lg-4 col-md-5 bg-white border-end d-flex flex-column shadow-lg position-relative h-100" style="z-index: 10;">
+  <div class="p-3 border-bottom bg-light d-flex justify-content-between align-items-center flex-shrink-0">
+    <h6 class="mb-0 fw-bold text-primary text-uppercase tracking-wider">
+      <i class="bi bi-pencil-square me-2"></i>
+      {{ editMode ? 'Actualizar Registro' : 'Nueva Asignación' }}
+    </h6>
+    <button (click)="cancelar()" class="btn-close scale-75 shadow-none border-0"></button>
+  </div>
+
+  <div class="p-4 overflow-y-auto h-100">
+    <form [formGroup]="asignacionForm" (ngSubmit)="onSubmit()" novalidate>
+      
+      <div class="mb-3">
+        <label class="form-label small fw-bold text-secondary text-uppercase tracking-widest">Área Destino</label>
+        <input type="text" class="form-control bg-light border-slate-200 py-2.5 rounded-3 fw-bold text-slate-600 shadow-none" formControlName="area" readonly>
+      </div>
+
+      <div class="mb-4">
+        <label class="form-label small fw-bold text-secondary text-uppercase tracking-widest">Documento Base</label>
+        <div class="input-group shadow-sm rounded-3 overflow-hidden">
+          <input type="text" class="form-control border-slate-200 py-2.5 text-primary fw-bold" [value]="documentoSeleccionadoOficio" placeholder="Buscar informe..." readonly>
+          <button type="button" class="btn btn-primary px-3" data-bs-toggle="modal" data-bs-target="#documentoModal" [disabled]="!puedeSeleccionarEntidades()">
+            <i class="bi bi-search"></i>
+          </button>
+        </div>
+      </div>
+
+      <div class="mb-4">
+        <label class="form-label small fw-bold text-secondary text-uppercase tracking-widest d-block mb-2">Responsable Asignado</label>
+        <div class="input-group shadow-sm rounded-3 overflow-hidden">
+          <span class="input-group-text bg-white border-slate-200 ps-3"><i class="bi bi-person-circle text-primary"></i></span>
+          <input type="text" class="form-control border-0 border-top border-bottom py-2.5 fw-bold text-primary" [value]="empleadoSeleccionadoNombre" placeholder="Asignar perito..." readonly>
+          <button type="button" class="btn btn-primary px-3" data-bs-toggle="modal" data-bs-target="#empleadoModal" [disabled]="!puedeSeleccionarEntidades()">
+            <i class="bi bi-search"></i>
+          </button>
+        </div>
+      </div>
+
+      <div class="mb-4">
+        <label class="form-label small fw-bold mb-2 text-uppercase tracking-widest d-flex align-items-center" 
+               [ngClass]="puedeEditarResultadoCuantitativo() ? 'text-primary' : 'text-secondary'">
+          Valor Cuantitativo 
+          <i *ngIf="!puedeEditarResultadoCuantitativo()" class="bi bi-lock-fill ms-2 small"></i>
+        </label>
+        
+        <div class="input-group shadow-sm rounded-3 overflow-hidden border"
+     [ngClass]="puedeEditarResultadoCuantitativo() ? 'border-primary-subtle' : 'border-slate-200'">
+    <input type="number" 
+           class="form-control form-control-sm border-0 fw-bold shadow-none py-2" 
+           [ngClass]="puedeEditarResultadoCuantitativo() ? 'bg-white text-primary' : 'bg-secondary-subtle text-muted'"
+           formControlName="cualitativo" 
+           placeholder="0.00" 
+           step="0.01">
+    <span class="input-group-text border-0 fw-black px-3 small" 
+           [ngClass]="puedeEditarResultadoCuantitativo() ? 'bg-primary text-white' : 'bg-secondary text-white opacity-50'">
+        G/L
+    </span>
+</div>
+      </div>
+
+   <div class="mb-4" *ngIf="puedeEditarEstadoCampo()">
+   
+    
+    <div class="row g-2 mb-3"> <div class="col-6">
+            <button type="button" class="btn w-100 fw-bold small text-uppercase py-2.5 rounded-3 shadow-sm transition-all"
+                    [ngClass]="asignacionForm.get('estado')?.value === 'EN_PROCESO' ? 'btn-warning text-white' : 'btn-outline-light text-secondary border-slate-200'"
+                    (click)="asignacionForm.patchValue({ estado: 'EN_PROCESO' })">
+                <i class="bi bi-clock-history me-1"></i> Proceso
+            </button>
+        </div>
+        <div class="col-6">
+            <button type="button" class="btn w-100 fw-bold small text-uppercase py-2.5 rounded-3 shadow-sm transition-all"
+                    [ngClass]="asignacionForm.get('estado')?.value === 'COMPLETADO' ? 'btn-success text-white' : 'btn-outline-light text-secondary border-slate-200'"
+                    (click)="asignacionForm.patchValue({ estado: 'COMPLETADO' })">
+                <i class="bi bi-check-circle-fill me-1"></i> Listo
+            </button>
+        </div>
+    </div>
+
+    <div class="d-grid gap-2">
+        <button type="submit" 
+                class="btn btn-primary py-3 rounded-3 shadow-lg fw-bold text-uppercase small tracking-widest transition-all hover:-translate-y-0.5 active:scale-95" 
+                [disabled]="asignacionForm.invalid || cargandoVisor">
+            <span *ngIf="cargandoVisor" class="spinner-border spinner-border-sm me-2"></span>
+            <i *ngIf="!cargandoVisor" class="bi bi-cloud-arrow-up-fill me-2 fs-6"></i> 
+            {{ editMode ? 'Actualizar' : 'Confirmar' }} Registro
+        </button>
+        
+        <button type="button" class="btn btn-link text-slate-400 text-decoration-none fw-bold small text-uppercase tracking-tighter py-2" (click)="cancelar()">
+            Cancelar operación
+        </button>
+    </div>
+</div>
+
+    </form>
+  </div>
+</aside>
+
+      <main class="col-lg-8 col-md-7 h-100 bg-secondary-subtle d-flex flex-column position-relative">
+        <div class="bg-dark text-white p-2 d-flex justify-content-between align-items-center flex-shrink-0">
+          <div class="small fw-bold"><i class="bi bi-eye me-2 text-info"></i>Vista Previa</div>
+          <span class="badge bg-info text-dark" *ngIf="documentoSeleccionadoOficio">{{ documentoSeleccionadoOficio }}</span>
+        </div>
+        <div class="flex-grow-1 bg-light d-flex align-items-center justify-content-center">
+          <div id="visor-dosaje" class="w-100 h-100"></div>
+          <div *ngIf="!hayDocumentoCargado" class="text-center text-muted">
+            <i class="bi bi-file-earmark-lock display-1 opacity-25 d-block mb-3"></i>
+            <h6 class="fw-bold text-uppercase tracking-widest">En espera de documento...</h6>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <div class="modal fade" id="documentoModal" tabindex="-1">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+      <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+        <div class="modal-header bg-primary text-white py-2">
+          <h5 class="modal-title fs-6 fw-bold text-uppercase"><i class="bi bi-search me-2"></i>Buscar Informe</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body bg-light p-4">
+          <div class="input-group mb-3 shadow-sm">
+            <span class="input-group-text bg-white"><i class="bi bi-search text-muted"></i></span>
+            <input type="text" class="form-control" placeholder="Buscar por DNI, nombre o número..." [(ngModel)]="terminoBusqueda" (input)="filtrarDocumentos()">
+          </div>
+          
+          <div class="card border-0 shadow-sm overflow-hidden mb-3">
+            <div class="table-responsive">
+              <table class="table table-hover align-middle mb-0 small">
+                <thead class="bg-white text-secondary text-uppercase fw-bold border-bottom">
+                  <tr>
+                    <th class="ps-3">Involucrado</th>
+                    <th>DNI</th>
+                    <th>N° Oficio</th>
+                    <th class="text-center">Acción</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let doc of documentosPaginados">
+                    <td class="ps-3 fw-bold">{{ doc.nombresyapellidos }}</td>
+                    <td class="text-muted">{{ doc.dni }}</td>
+                    <td class="text-primary fw-bold">{{ doc.nombreOficio }}</td>
+                    <td class="text-center">
+                      <button *ngIf="!isDocumentoAsignado(doc.id!)" class="btn btn-sm btn-outline-primary rounded-pill px-3" (click)="seleccionarDocumento(doc)" data-bs-dismiss="modal">Seleccionar</button>
+                      <span *ngIf="isDocumentoAsignado(doc.id!)" class="badge bg-warning-subtle text-warning border px-2 py-1">ASIGNADO</span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <nav class="d-flex flex-column align-items-center gap-2 mt-3">
+            <small class="text-muted fw-bold">Página {{ currentPage }} de {{ totalPages }}</small>
+            <ul class="pagination pagination-sm mb-0">
+              <li class="page-item" [class.disabled]="currentPage === 1">
+                <button class="page-link shadow-none" (click)="cambiarPagina(-1)"><i class="bi bi-chevron-left"></i></button>
+              </li>
+              <li class="page-item" [class.disabled]="currentPage === totalPages">
+                <button class="page-link shadow-none" (click)="cambiarPagina(1)"><i class="bi bi-chevron-right"></i></button>
+              </li>
+            </ul>
+          </nav>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="empleadoModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+      <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+        <div class="modal-header bg-primary text-white py-2">
+          <h5 class="modal-title fs-6 fw-bold text-uppercase"><i class="bi bi-person-check me-2"></i>Asignar Perito</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body bg-light p-4">
+          <div class="input-group mb-3 shadow-sm">
+            <span class="input-group-text bg-white"><i class="bi bi-search text-muted"></i></span>
+            <input type="text" class="form-control" placeholder="Buscar perito por nombre o apellido..." [(ngModel)]="terminoBusquedaEmpleado" (input)="filtrarEmpleados()">
+          </div>
+
+          <div class="card border-0 shadow-sm overflow-hidden mb-0">
+            <div class="table-responsive">
+              <table class="table table-hover align-middle mb-0 small">
+                <thead class="bg-white text-secondary text-uppercase fw-bold border-bottom">
+                  <tr>
+                    <th class="ps-3">Especialista / Perito</th>
+                    <th>Cargo / Grado</th>
+                    <th class="text-center">Acción</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let emp of empleadosFiltrados">
+                    <td class="ps-3 fw-bold text-dark text-uppercase">
+                      <i class="bi bi-person-circle me-2 text-primary opacity-50"></i>
+                      {{ emp.nombre }} {{ emp.apellido }}
+                    </td>
+                    <td class="text-muted text-uppercase small">{{ emp.cargo || 'Perito' }}</td>
+                    <td class="text-center">
+                      <button class="btn btn-sm btn-outline-primary rounded-pill px-4 fw-bold" (click)="seleccionarEmpleado(emp)" data-bs-dismiss="modal">
+                        Seleccionar
+                      </button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          
+          <div *ngIf="empleadosFiltrados.length === 0" class="text-center py-4">
+            <i class="bi bi-person-x display-6 text-muted opacity-25"></i>
+            <p class="text-muted small mt-2">No se encontraron peritos disponibles.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>

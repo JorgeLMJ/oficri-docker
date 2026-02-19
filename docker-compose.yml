@@ -1,0 +1,100 @@
+version: '3.8'
+
+services:
+  # 1. Base de Datos
+  mysql:
+    image: mysql:8.0
+    container_name: mysql_database
+    ports:
+      - "3307:3306"
+    command: --max_allowed_packet=64M
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: 2026
+      MYSQL_DATABASE: login
+      MYSQL_USER: dosaje
+      MYSQL_PASSWORD: admin
+    networks:
+      spring-network:
+        aliases:
+          - mysql_database
+    volumes:
+      - mysql-volume:/var/lib/mysql
+    deploy:
+      resources:
+        limits:
+          memory: 800M
+
+  # 2. Backend (Spring Boot)
+  backend:
+    build:
+      context: ./sistema_web
+      dockerfile: Dockerfile
+    container_name: spring-boot-container
+    restart: always 
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql_database:3306/login?allowPublicKeyRetrieval=true&useSSL=false
+      - SPRING_DATASOURCE_USERNAME=dosaje
+      - SPRING_DATASOURCE_PASSWORD=admin
+    networks:
+      spring-network:
+        aliases:
+          - backend-service
+    depends_on:
+      - mysql
+      - onlyoffice
+    deploy:
+      resources:
+        limits:
+          memory: 1.5G
+
+  # 3. Frontend (Angular)
+  frontend:
+    build:
+      context: ./angular-docker
+      dockerfile: Dockerfile
+    container_name: angular-container
+    restart: always 
+    ports:
+      - "8081:80"
+    networks:
+      - spring-network
+    depends_on:
+      - backend
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+
+  # 4. OnlyOffice (Document Server)
+  onlyoffice:
+    image: onlyoffice/documentserver:latest
+    container_name: onlyoffice_server
+    privileged: true
+    restart: always
+    deploy:
+      resources:
+        limits:
+          memory: 2.5G
+          cpus: '2.0'
+    ports:
+      - "9000:80"
+    networks:
+      spring-network:
+        aliases:
+          - onlyoffice-service
+    environment:
+      - JWT_ENABLED=true
+      - JWT_SECRET=aCm6COwjjJhSayYMnqua8iBPKtvSGBHd
+      - JWT_HEADER=Authorization
+      - JWT_IN_BODY=true
+      - USE_UNAUTHORIZED_STORAGE=true
+
+networks:
+  spring-network:
+    driver: bridge
+
+volumes:
+  mysql-volume:
